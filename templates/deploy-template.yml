@@ -1,0 +1,51 @@
+#presumes the existence of a repository resource named 'target' with a project.json in the root directory
+#presumes the existence of a repository resource named 'impower' with relevant scripts
+parameters:
+  - name: service_connection
+    type: string
+  - name: azure_environment
+    type: string
+  - name: orchestrator_folder
+    type: string
+  - name: trace_level
+    type: string
+    default: 'Warning'
+  - name: stage_name
+    type: string
+  - name: stage_dependency
+    type: string
+    default: 'Build'
+  - name: main_only
+    type: boolean
+    default: false
+
+stages:
+- stage: ${{ parameters.stage_name }}
+  ${{ if and(parameters.stage_dependency,parameters.main_ony) }}:
+    dependsOn: ${{ parameters.stage_dependency }}
+    condition: eq(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded')
+  ${{ elseif parameters.stage_dependency }}:
+    dependsOn: ${{ parameters.stage_dependency }}
+    condition: >
+      and(
+        eq(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded'),
+        eq(variables['Build.SourceBranchName'], 'main')
+      )
+  jobs:
+  - deployment: Deploy_${{ parameters.stage_name }}
+    displayName: 'Deploy ${{ parameters.stage_name }}'
+    pool:
+      vmImage: 'windows-latest'
+    environment: ${{ parameters.azure_environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: UiPathDeploy@2
+            inputs:
+              orchestratorConnection: ${{ parameters.service_connection }}
+              packagesPath: $(Pipeline.Workspace)/UiPathPackage
+              folderName: ${{ parameters.orchestrator_folder }}
+              traceLevel: ${{ parameters.trace_level }}
+          
+      

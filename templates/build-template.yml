@@ -1,0 +1,78 @@
+#presumes the existence of a repository resource named 'target' with a project.json in the root directory
+#presumes the existence of a repository resource named 'impower' with relevant scripts
+parameters:
+  - name: service_connection
+    type: string
+  - name: icon_url
+    type: string
+  - name: output_type
+    type: string
+    default: 'None'
+  - name: package_version
+    type: string
+  - name: add_release_notes
+    type: boolean
+    default: false
+  - name: trace_level
+    type: string
+    default: 'Warning'
+
+stages:
+- stage: Build
+  displayName: 'Build'
+  pool:
+    vmImage: 'windows-latest'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Package'
+    steps:
+    - checkout: target
+      displayName: 'Checkout Target Repository'
+      path: target
+    - checkout: impower
+      displayName: 'Checkout Impower Resources'
+      path: impower
+    - ${{ if parameters.icon_url }}:
+      - task: powershell@2
+        name: add_icon_url
+        displayName: 'Add Icon URL'
+        inputs:
+          targetType: 'filePath'
+          filePath: '$(Agent.BuildDirectory)/impower/utilities/add_package_icon.ps1'
+          arguments: >
+            -path_to_project_json $(Agent.BuildDirectory)/target/project.json
+            -image_url ${{ parameters.icon_url }}
+    - ${{ if eq(parameters.add_release_notes, true) }}:
+      - task: powershell@2
+        name: add_release_notes
+        displayName: 'Add Release Notes'
+        inputs:
+          targetType: 'filePath'
+          filePath: '$(Agent.BuildDirectory)/impower/utilities/add_release_notes.ps1'
+          arguments: >
+            -path_to_project_folder $(Agent.BuildDirectory)/target
+    - task: UiPathPack@2
+      name: pack_package
+      displayName: 'Pack Package'
+      inputs:
+        ${{ if eq(parameters.package_version,'auto') }}:
+          versionType: 'AutoVersion'
+        ${{ elseif parameters.package_version }}:
+          versionType: 'Manual'
+          version: ${{ parameters.package_version }}
+        ${{ else }}:
+          versionType: 'CurrentVersion'
+        projectJsonPath: $(Agent.BuildDirectory)/target/project.json
+        outputPath: $(Build.ArtifactStagingDirectory)
+        outputType: ${{ parameters.output_type }}
+        orchestratorConnection: ${{ parameters.service_connection }}
+        traceLevel: ${{ parameters.trace_level }}
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: $(Build.ArtifactStagingDirectory)
+        artifact: 'UiPathPackage'
+        publishLocation: 'pipeline'
+
+
+
+
