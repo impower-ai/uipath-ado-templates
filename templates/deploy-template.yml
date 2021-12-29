@@ -21,10 +21,10 @@ parameters:
 
 stages:
 - stage: ${{ parameters.stage_name }}
-  ${{ if and(parameters.stage_dependency,parameters.main_only) }}:
+  ${{ if and(parameters.stage_dependency,not(parameters.main_only)) }}:
     dependsOn: ${{ parameters.stage_dependency }}
     condition: eq(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded')
-  ${{ elseif parameters.stage_dependency }}:
+  ${{ if and(parameters.stage_dependency,parameters.main_only) }}:
     dependsOn: ${{ parameters.stage_dependency }}
     condition: >
       and(
