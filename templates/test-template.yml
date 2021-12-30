@@ -36,7 +36,7 @@ stages:
     - checkout: impower
       displayName: 'Checkout Impower Resources'
       path: impower
-    ${{ if parameters.check_flags }}:
+    - ${{ if parameters.check_flags }}:
       - task: powershell@2
         name: check_for_test_case_tags
         displayName: 'Check For Flag'
@@ -56,7 +56,7 @@ stages:
           arguments: >
             -path_to_project $(Agent.BuildDirectory)/target
             -tags $(check_for_test_case_tags.flagValue)
-    ${{ if parameters.test_set }}:
+    - ${{ if parameters.test_set }}:
       - task: UiPathTest@2
         name: 'Run Test Set'
         inputs:
@@ -65,7 +65,7 @@ stages:
           testSet: ${{ parameters.test_set }}
           folderName: ${{ parameters.orchestrator_folder }}
           traceLevel: ${{ parameters.trace_level }}
-    ${{ else }}:
+    - ${{ else }}:
       - task: UiPathTest@2
         name: 'Run Transient Tests'
         inputs:
