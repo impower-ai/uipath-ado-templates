@@ -29,6 +29,8 @@ stages:
   jobs:
   - job: Test_${{ parameters.stage_name }}
     displayName: 'Test Project'
+    pool:
+      vmImage: 'windows-latest'
     steps:
     - checkout: target
       name: checkout_target
