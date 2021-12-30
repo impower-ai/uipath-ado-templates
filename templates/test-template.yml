@@ -77,7 +77,7 @@ stages:
         inputs:
           testTarget: 'TestProject'
           orchestratorConnection: ${{ parameters.service_connection }}
-          testProjectPath:
+          testProjectPath: $(Agent.BuildDirectory)/target/project.json
           folderName: ${{ parameters.orchestrator_folder }}
           traceLevel: ${{ parameters.trace_level }}
           
