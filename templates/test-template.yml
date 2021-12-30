@@ -1,0 +1,76 @@
+#presumes the existence of a repository resource named 'target' with a project.json in the root directory
+#presumes the existence of a repository resource named 'impower' with relevant scripts
+parameters:
+  - name: service_connection
+    type: string
+  - name: orchestrator_folder
+    type: string
+  - name: trace_level
+    type: string
+    default: 'Warning'
+  - name: stage_name
+    type: string
+  - name: stage_dependency
+    type: string
+    default: 'Build'
+  - name: test_set
+    type: string
+  - name: check_flags
+    type: boolean
+
+stages:
+- stage: ${{ parameters.stage_name }}
+  displayName: ${{ replace(parameters.stage_name,'_',' ') }}
+  ${{ if parameters.stage_dependency }}:
+    dependsOn: ${{ parameters.stage_dependency }}
+    condition: eq(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded')
+  jobs:
+  - job: Test_${{ parameters.stage_name }}
+    displayName: 'Test Project'
+    steps:
+    - checkout: target
+      displayName: 'Checkout Target Repository'
+      path: target
+    - checkout: impower
+      displayName: 'Checkout Impower Resources'
+      path: impower
+    ${{ if parameters.check_flags }}:
+      - task: powershell@2
+        name: check_for_test_case_tags
+        displayName: 'Check For Flag'
+        inputs:
+          targetType: 'filePath'
+          filePath: '$(Agent.BuildDirectory)/impower/utilities/check_for_flag.ps1'
+          arguments: >
+            -search_phrase 'tags'
+            -find_value 'true'
+      - task: powershell@2
+        name: filter_test_cases
+        displayName: 'Filter Test Cases'
+        condition: eq($(check_for_test_case_tags.phraseFound),'true')
+        inputs:
+          targetType: 'filePath'
+          filePath: '$(Agent.BuildDirectory)/impower/utilities/exclude_test_cases_tagged.ps1'
+          arguments: >
+            -path_to_project $(Agent.BuildDirectory)/target
+            -tags $(check_for_test_case_tags.flagValue)
+    ${{ if parameters.test_set }}:
+      - task: UiPathTest@2
+        name: 'Run Test Set'
+        inputs:
+          testTarget: 'TestSet'
+          orchestratorConnection: ${{ parameters.service_connection }}
+          testSet: ${{ parameters.test_set }}
+          folderName: ${{ parameters.orchestrator_folder }}
+          traceLevel: ${{ parameters.trace_level }}
+    ${{ else }}:
+      - task: UiPathTest@2
+        name: 'Run Transient Tests'
+        inputs:
+          testTarget: 'TestProject'
+          orchestratorConnection: ${{ parameters.service_connection }}
+          testProjectPath:
+          folderName: ${{ parameters.orchestrator_folder }}
+          traceLevel: ${{ parameters.trace_level }}
+          
+      

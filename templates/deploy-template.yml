@@ -21,6 +21,7 @@ parameters:
 
 stages:
 - stage: ${{ parameters.stage_name }}
+  displayName: ${{ replace(parameters.stage_name,'_',' ') }}
   ${{ if and(parameters.stage_dependency,not(parameters.main_only)) }}:
     dependsOn: ${{ parameters.stage_dependency }}
     condition: eq(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded')
