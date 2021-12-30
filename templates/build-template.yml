@@ -57,9 +57,9 @@ stages:
       inputs:
         ${{ if eq(parameters.package_version,'auto') }}:
           versionType: 'AutoVersion'
-        ${{ elseif parameters.package_version }}:
+        ${{ elseif eq(parameters.package_version, 'build') }}:
           versionType: 'Manual'
-          version: ${{ parameters.package_version }}
+          version: '$(Build.BuildNumber)'
         ${{ else }}:
           versionType: 'CurrentVersion'
         projectJsonPath: $(Agent.BuildDirectory)/target/project.json
