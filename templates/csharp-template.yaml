@@ -12,7 +12,7 @@ stages:
     jobs:
     - job: Build
       steps:
-      - checkout: Target_Repository
+      - checkout: target
         name: Checkout_Target_Repository
         displayName: 'Checkout Target Repository' 
         path: target
