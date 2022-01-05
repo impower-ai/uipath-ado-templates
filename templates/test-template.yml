@@ -19,13 +19,22 @@ parameters:
   - name: check_flags
     type: boolean
     default: false
+  - name: skip_on_main
+    type: boolean
+    default: true
 
 stages:
 - stage: ${{ parameters.stage_name }}
   displayName: ${{ replace(parameters.stage_name,'_',' ') }}
-  ${{ if parameters.stage_dependency }}:
-    dependsOn: ${{ parameters.stage_dependency }}
-    condition: eq(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded')
+  dependsOn: ${{ parameters.stage_dependency }}
+  ${{ if not(parameters.skip_on_main) }}:
+    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped')
+  ${{ else }}:
+    condition: >
+      and(
+        in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped'),
+        not(eq(variables['Build.SourceBranchName'], 'main'))
+      )
   jobs:
   - job: Test_${{ parameters.stage_name }}
     displayName: 'Test Project'
