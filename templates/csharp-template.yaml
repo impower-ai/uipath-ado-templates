@@ -5,6 +5,10 @@ parameters:
   - name: folder
     displayName: "Orchestrator Folder"
     type: string
+  - name: uipath_environment
+    type: string
+  - name: stage_name
+    type: string
 
 stages:
   - stage: Build
@@ -46,65 +50,18 @@ stages:
           artifact: 'CSharp Package'
           publishLocation: 'pipeline'
 
-  - stage: Impower_Development
+  - stage: ${{ parameters.stage_name }}
     condition: succeeded()
-    displayName: Impower Development
-    dependsOn: Build
     jobs:
-      - deployment: DeployDevelopmentImpower
+      - deployment: ${{ parameters.stage_name }}_Deploy
         condition: succeeded()
-        displayName: Deploy To Development
-        environment: 'ImpowerDevelopment'
         strategy:
           runOnce:
             deploy:
               steps:
                 - task: UiPathDeploy@2
                   inputs:
-                    orchestratorConnection: 'UiPath-Impower-Development'
-                    packagesPath: '$(Pipeline.Workspace)/CSharp Package'
-                    folderName: 'Shared'
-                    traceLevel: 'Information'
-
-  - stage: Development
-    condition: succeeded()
-    displayName: Development
-    dependsOn: Build
-    jobs:
-      - deployment: DeployDevelopment
-        condition: succeeded()
-        displayName: Deploy To Development
-        environment: 'Development'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: UiPathDeploy@2
-                  inputs:
-                    orchestratorConnection: 'UiPath-Development'
-                    packagesPath: '$(Pipeline.Workspace)/CSharp Package'
-                    folderName: '${{ parameters.folder }}'
-                    traceLevel: 'Information'
-
-  - stage: Production
-    dependsOn: Development
-    condition: |
-      and(
-          eq(dependencies.Development.result,'Succeeded'),
-          eq(variables['Build.SourceBranchName'], 'main')
-      )
-    displayName: Production
-    jobs:
-      - deployment: DeployProduction
-        displayName: Deploy To Production
-        environment: 'Production'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: UiPathDeploy@2
-                  inputs:
-                    orchestratorConnection: 'UiPath-Production'
+                    orchestratorConnection: ${{ parameters.uipath_environment }}
                     packagesPath: '$(Pipeline.Workspace)/CSharp Package'
                     folderName: '${{ parameters.folder }}'
                     traceLevel: 'Information'
