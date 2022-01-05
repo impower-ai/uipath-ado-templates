@@ -1,0 +1,110 @@
+parameters:
+  - name: project_name
+    displayName: "Project Name"
+    type: string
+  - name: folder
+    displayName: "Orchestrator Folder"
+    type: string
+
+stages:
+  - stage: Build
+    displayName: Build
+    jobs:
+    - job: Build
+      steps:
+      - checkout: Target_Repository
+        name: Checkout_Target_Repository
+        displayName: 'Checkout Target Repository' 
+        path: target
+      - task: UseDotNet@2
+        displayName: 'Install SDK'
+        inputs:
+          version: '5.0.x'
+          includePreviewVersions: true
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build Solution'
+        inputs:
+          command: 'build'
+          arguments: '-p:Version=$(Build.BuildNumber)'
+          projects: '${{ parameters.project_name }}.csproj'
+          versioningScheme: 'byBuildNumber'
+          outputDir: '$(Build.ArtifactStagingDirectory)'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Pack Solution'
+        inputs:
+          command: 'pack'
+          projects: '${{ parameters.project_name }}.csproj'
+          nobuild: true
+          versioningScheme: 'byBuildNumber'
+          outputDir: '$(Build.ArtifactStagingDirectory)'
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: 'CSharp Package'
+          publishLocation: 'pipeline'
+
+  - stage: Impower_Development
+    condition: succeeded()
+    displayName: Impower Development
+    dependsOn: Build
+    jobs:
+      - deployment: DeployDevelopmentImpower
+        condition: succeeded()
+        displayName: Deploy To Development
+        environment: 'ImpowerDevelopment'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: UiPathDeploy@2
+                  inputs:
+                    orchestratorConnection: 'UiPath-Impower-Development'
+                    packagesPath: '$(Pipeline.Workspace)/CSharp Package'
+                    folderName: 'Shared'
+                    traceLevel: 'Information'
+
+  - stage: Development
+    condition: succeeded()
+    displayName: Development
+    dependsOn: Build
+    jobs:
+      - deployment: DeployDevelopment
+        condition: succeeded()
+        displayName: Deploy To Development
+        environment: 'Development'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: UiPathDeploy@2
+                  inputs:
+                    orchestratorConnection: 'UiPath-Development'
+                    packagesPath: '$(Pipeline.Workspace)/CSharp Package'
+                    folderName: '${{ parameters.folder }}'
+                    traceLevel: 'Information'
+
+  - stage: Production
+    dependsOn: Development
+    condition: |
+      and(
+          eq(dependencies.Development.result,'Succeeded'),
+          eq(variables['Build.SourceBranchName'], 'main')
+      )
+    displayName: Production
+    jobs:
+      - deployment: DeployProduction
+        displayName: Deploy To Production
+        environment: 'Production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: UiPathDeploy@2
+                  inputs:
+                    orchestratorConnection: 'UiPath-Production'
+                    packagesPath: '$(Pipeline.Workspace)/CSharp Package'
+                    folderName: '${{ parameters.folder }}'
+                    traceLevel: 'Information'
