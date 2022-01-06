@@ -12,9 +12,9 @@ parameters:
     default: 'Warning'
   - name: stage_name
     type: string
-  - name: stage_dependency
-    type: string
-    default: 'Build'
+  - name: stage_dependencies
+    type: object
+    default: ''
   - name: main_only
     type: boolean
     default: false
@@ -22,20 +22,16 @@ parameters:
 stages:
 - stage: ${{ parameters.stage_name }}
   displayName: ${{ replace(parameters.stage_name,'_',' ') }}
-  dependsOn: ${{ parameters.stage_dependency }}
-  ${{ if not(parameters.main_only) }}:
-    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped')
-  ${{ if parameters.main_only }}:
-    condition: >
-      and(
-        in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped'),
-        eq(variables['Build.SourceBranchName'], 'main')
-      )
+  ${{ if parameters.stage_dependencies }}:
+    dependsOn: '${{ parameters.stage_dependencies }}'
+  condition: succeeded()
   jobs:
   - deployment: Deploy_${{ parameters.stage_name }}
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
     pool:
       vmImage: 'windows-latest'
+    ${{ if parameters.main_only }}:
+      condition: eq(variables['Build.SourceBranchName'], 'main')
     environment: ${{ parameters.azure_environment }}
     strategy:
       runOnce:
