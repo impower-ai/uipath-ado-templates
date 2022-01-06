@@ -3,9 +3,9 @@
 parameters:
   - name: stage_name
     type: string
-  - name: stage_dependency
-    type: string
-    default: 'Build'
+  - name: stage_dependencies
+    type: object
+    default: ''
   - name: service_connection
     type: string
   - name: orchestrator_folder
@@ -26,17 +26,13 @@ parameters:
 stages:
 - stage: ${{ parameters.stage_name }}
   displayName: ${{ replace(parameters.stage_name,'_',' ') }}
-  dependsOn: ${{ parameters.stage_dependency }}
-  ${{ if not(parameters.skip_on_main) }}:
-    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped')
-  ${{ else }}:
-    condition: >
-      and(
-        in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped'),
-        not(eq(variables['Build.SourceBranchName'], 'main'))
-      )
+  ${{ if parameters.stage_dependencies }}:
+    dependsOn: '${{ parameters.stage_dependencies }}'
+  condition: succeeded()
   jobs:
   - job: Test_${{ parameters.stage_name }}
+    ${{ if parameters.skip_on_main }}:
+      condition: not(eq(variables['Build.SourceBranchName'], 'main'))
     displayName: 'Test Project'
     pool:
       vmImage: 'windows-latest'
