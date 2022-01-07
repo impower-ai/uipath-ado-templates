@@ -57,10 +57,10 @@ stages:
       inputs:
         ${{ if eq(parameters.package_version,'auto') }}:
           versionType: 'AutoVersion'
-        ${{ elseif eq(parameters.package_version, 'build') }}:
+        ${{ if eq(parameters.package_version, 'build') }}:
           versionType: 'Manual'
           version: '$(Build.BuildNumber)'
-        ${{ else }}:
+        ${{ if not(in(parameters.package_version,'build','auto')) }}:
           versionType: 'CurrentVersion'
         projectJsonPath: $(Agent.BuildDirectory)/target/project.json
         outputPath: $(Build.ArtifactStagingDirectory)
