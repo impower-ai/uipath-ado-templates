@@ -16,6 +16,9 @@ parameters:
   - name: trace_level
     type: string
     default: 'Warning'
+  - name: is_alpha
+    type: boolean
+    default: false
 
 stages:
 - stage: Build
@@ -67,6 +70,16 @@ stages:
         outputType: ${{ parameters.output_type }}
         orchestratorConnection: ${{ parameters.service_connection }}
         traceLevel: ${{ parameters.trace_level }}
+    - ${{ if parameters.is_alpha }}:
+      - task: powershell@2
+        name: make_alpha
+        displayName: 'Make Alpha/Prerelease'
+        inputs:
+          targetType: 'filePath'
+          filePath: '$(Agent.BuildDirectory)/impower/utilities/append_file_suffix.ps1'
+          arguments: >
+            -directory_path $(Build.ArtifactStagingDirectory)
+            -suffix "-alpha"
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
