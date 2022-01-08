@@ -24,7 +24,7 @@ parameters:
     default: true
 
 stages:
-- if ${{ not(and(parameters.skip_on_main,eq(variables['Build.SourceBranchName'], 'main'))) }}: 
+- ${{ if not(and(parameters.skip_on_main,eq(variables['Build.SourceBranchName'], 'main'))) }}: 
   - stage: ${{ parameters.stage_name }}
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
     dependsOn: ${{ parameters.stage_dependency }}
