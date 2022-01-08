@@ -20,7 +20,7 @@ parameters:
     default: false
 
 stages:
-- if ${{ or(not(parameters.main_only),eq(variables['Build.SourceBranchName'], 'main')) }}: 
+- ${{ if or(not(parameters.main_only),eq(variables['Build.SourceBranchName'], 'main')) }}: 
   - stage: ${{ parameters.stage_name }}
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
     dependsOn: '${{ parameters.stage_dependencies }}'
