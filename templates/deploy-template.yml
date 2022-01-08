@@ -15,22 +15,12 @@ parameters:
   - name: stage_dependency
     type: string
     default: 'Build'
-  - name: main_only
-    type: boolean
-    default: false
 
 stages:
 - stage: ${{ parameters.stage_name }}
   displayName: ${{ replace(parameters.stage_name,'_',' ') }}
   dependsOn: ${{ parameters.stage_dependency }}
-  ${{ if not(parameters.main_only) }}:
-    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped')
-  ${{ if parameters.main_only }}:
-    condition: >
-      and(
-        in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped'),
-        eq(variables['Build.SourceBranchName'], 'main')
-      )
+  condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped')
   jobs:
   - deployment: Deploy_${{ parameters.stage_name }}
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
