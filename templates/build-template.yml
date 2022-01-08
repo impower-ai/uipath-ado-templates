@@ -76,10 +76,9 @@ stages:
         displayName: 'Make Alpha/Prerelease'
         inputs:
           targetType: 'filePath'
-          filePath: '$(Agent.BuildDirectory)/impower/utilities/append_file_suffix.ps1'
+          filePath: '$(Agent.BuildDirectory)/impower/utilities/nupkg_append_version_suffix.ps1'
           arguments: >
             -directory_path $(Build.ArtifactStagingDirectory)
-            -suffix "-alpha"
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
