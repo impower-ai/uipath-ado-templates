@@ -3,9 +3,9 @@
 parameters:
   - name: stage_name
     type: string
-  - name: stage_dependency
-    type: string
-    default: 'Build'
+  - name: stage_dependencies 
+    type: object
+    default: {}
   - name: service_connection
     type: string
   - name: orchestrator_folder
@@ -27,8 +27,8 @@ stages:
 - ${{ if not(and(parameters.skip_on_main,eq(variables['Build.SourceBranchName'], 'main'))) }}: 
   - stage: ${{ parameters.stage_name }}
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
-    dependsOn: ${{ parameters.stage_dependency }}
-    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded')
+    dependsOn: '${{ parameters.stage_dependencies }}'
+    condition: succeeded()
     jobs:
     - job: Test_${{ parameters.stage_name }}
       displayName: 'Test Project'
