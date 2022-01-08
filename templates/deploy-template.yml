@@ -24,7 +24,7 @@ stages:
   - stage: ${{ parameters.stage_name }}
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
     dependsOn: ${{ parameters.stage_dependency }}
-    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped')
+    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded')
     jobs:
     - deployment: Deploy_${{ parameters.stage_name }}
       displayName: ${{ replace(parameters.stage_name,'_',' ') }}
