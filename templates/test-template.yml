@@ -3,9 +3,9 @@
 parameters:
   - name: stage_name
     type: string
-  - name: stage_dependency
-    type: string
-    default: 'Build'
+  - name: stage_dependencies 
+    type: object
+    default: {}
   - name: service_connection
     type: string
   - name: orchestrator_folder
@@ -24,70 +24,64 @@ parameters:
     default: true
 
 stages:
-- stage: ${{ parameters.stage_name }}
-  displayName: ${{ replace(parameters.stage_name,'_',' ') }}
-  dependsOn: ${{ parameters.stage_dependency }}
-  ${{ if not(parameters.skip_on_main) }}:
-    condition: in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped')
-  ${{ else }}:
-    condition: >
-      and(
-        in(dependencies.${{ parameters.stage_dependency }}.result,'Succeeded','Skipped'),
-        not(eq(variables['Build.SourceBranchName'], 'main'))
-      )
-  jobs:
-  - job: Test_${{ parameters.stage_name }}
-    displayName: 'Test Project'
-    pool:
-      vmImage: 'windows-latest'
-    steps:
-    - checkout: target
-      name: checkout_target
-      displayName: 'Checkout Target Repository'
-      path: target
-    - checkout: impower
-      name: checkout_impower
-      displayName: 'Checkout Impower Resources'
-      path: impower
-    - ${{ if parameters.check_flags }}:
-      - task: powershell@2
-        name: check_for_test_case_tags
-        displayName: 'Check For Test Case Tags'
-        inputs:
-          targetType: 'filePath'
-          filePath: '$(Agent.BuildDirectory)/impower/utilities/check_for_flag.ps1'
-          arguments: >
-            -search_phrase 'tags'
-            -find_value 'true'
-      - task: powershell@2
-        name: filter_test_cases
-        displayName: 'Filter Test Cases'
-        condition: eq($(check_for_test_case_tags.phraseFound),'true')
-        inputs:
-          targetType: 'filePath'
-          filePath: '$(Agent.BuildDirectory)/impower/utilities/exclude_test_cases_tagged.ps1'
-          arguments: >
-            -path_to_project $(Agent.BuildDirectory)/target
-            -tags $(check_for_test_case_tags.flagValue)
-    - ${{ if parameters.test_set }}:
-      - task: UiPathTest@2
-        name: run_test_set
-        displayName: 'Run Test Set'
-        inputs:
-          testTarget: 'TestSet'
-          orchestratorConnection: ${{ parameters.service_connection }}
-          testSet: ${{ parameters.test_set }}
-          folderName: ${{ parameters.orchestrator_folder }}
-          traceLevel: ${{ parameters.trace_level }}
-    - ${{ else }}:
-      - task: UiPathTest@2
-        name: run_transient_tests
-        displayName: 'Run Transient Tests'
-        inputs:
-          testTarget: 'TestProject'
-          orchestratorConnection: ${{ parameters.service_connection }}
-          testProjectPath: $(Agent.BuildDirectory)/target/project.json
-          folderName: ${{ parameters.orchestrator_folder }}
-          traceLevel: ${{ parameters.trace_level }}
+- ${{ if not(and(parameters.skip_on_main,eq(variables['Build.SourceBranchName'], 'main'))) }}: 
+  - stage: ${{ parameters.stage_name }}
+    displayName: ${{ replace(parameters.stage_name,'_',' ') }}
+    dependsOn: '${{ parameters.stage_dependencies }}'
+    condition: succeeded()
+    jobs:
+    - job: Test_${{ parameters.stage_name }}
+      displayName: 'Test Project'
+      pool:
+        vmImage: 'windows-latest'
+      steps:
+      - checkout: target
+        name: checkout_target
+        displayName: 'Checkout Target Repository'
+        path: target
+      - checkout: impower
+        name: checkout_impower
+        displayName: 'Checkout Impower Resources'
+        path: impower
+      - ${{ if parameters.check_flags }}:
+        - task: powershell@2
+          name: check_for_test_case_tags
+          displayName: 'Check For Test Case Tags'
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(Agent.BuildDirectory)/impower/utilities/check_for_flag.ps1'
+            arguments: >
+              -search_phrase 'tags'
+              -find_value 'true'
+        - task: powershell@2
+          name: filter_test_cases
+          displayName: 'Filter Test Cases'
+          condition: eq($(check_for_test_case_tags.phraseFound),'true')
+          inputs:
+            targetType: 'filePath'
+            filePath: '$(Agent.BuildDirectory)/impower/utilities/exclude_test_cases_tagged.ps1'
+            arguments: >
+              -path_to_project $(Agent.BuildDirectory)/target
+              -tags $(check_for_test_case_tags.flagValue)
+      - ${{ if parameters.test_set }}:
+        - task: UiPathTest@2
+          name: run_test_set
+          displayName: 'Run Test Set'
+          inputs:
+            testTarget: 'TestSet'
+            orchestratorConnection: ${{ parameters.service_connection }}
+            testSet: ${{ parameters.test_set }}
+            folderName: ${{ parameters.orchestrator_folder }}
+            traceLevel: ${{ parameters.trace_level }}
+      - ${{ else }}:
+        - task: UiPathTest@2
+          name: run_transient_tests
+          displayName: 'Run Transient Tests'
+          inputs:
+            testTarget: 'TestProject'
+            orchestratorConnection: ${{ parameters.service_connection }}
+            testProjectPath: $(Agent.BuildDirectory)/target/project.json
+            folderName: ${{ parameters.orchestrator_folder }}
+            traceLevel: ${{ parameters.trace_level }}
           
       
