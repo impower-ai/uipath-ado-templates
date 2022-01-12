@@ -11,7 +11,8 @@ parameters:
   - name: main_only
     type: boolean
     default: false
-
+  - name: artifact_directory
+    type: string
 
 stages:
 - ${{ if or(not(parameters.main_only),eq(variables['Build.SourceBranchName'], 'main')) }}: 
@@ -29,11 +30,9 @@ stages:
         runOnce:
           deploy:
             steps:
-            - task: NuGetAuthenticate@0
-              inputs:
-                nuGetServiceConnections: '${{ parameters.service_connection }}'
             - task: NuGetCommand@2
               inputs:
                 command: push
-                packagesToPush:  '$(Pipeline.Workspace)/CSharp Package'
+                packagesToPush:  '$(Pipeline.Workspace)/${{ parameters.artifact_directory }}'
                 nuGetFeedType: external
+                publishFeedCredentials: '${{ parameters.service_connection }}'
