@@ -33,15 +33,22 @@ stages:
           includePreviewVersions: true
 
       - task: DotNetCoreCLI@2
+        displayName: 'Restore'
+        inputs:
+          command: 'restore'
+          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
+          feedsToUse: 'config'
+          nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/nuget.config'
+
+      - task: DotNetCoreCLI@2
         displayName: 'Build Solution'
         inputs:
           command: 'build'
           arguments: '-p:Version=$(Build.BuildNumber)'
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
-          versioningScheme: 'byBuildNumber'
           outputDir: '$(Build.ArtifactStagingDirectory)'
-          selectOrConfig: 'config'
-          nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/default_nuget.config'
+          feedsToUse: 'config'
+          nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/nuget.config'
 
       - task: DotNetCoreCLI@2
         displayName: 'Pack Solution'
