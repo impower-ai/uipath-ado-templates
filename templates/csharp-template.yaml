@@ -37,7 +37,7 @@ stages:
         inputs:
           command: 'build'
           arguments: '-p:Version=$(Build.BuildNumber)'
-          projects: '${{ parameters.project_name }}.csproj'
+          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
           versioningScheme: 'byBuildNumber'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           selectOrConfig: 'config'
@@ -47,7 +47,7 @@ stages:
         displayName: 'Pack Solution'
         inputs:
           command: 'pack'
-          projects: '${{ parameters.project_name }}.csproj'
+          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
           nobuild: true
           versioningScheme: 'byBuildNumber'
           outputDir: '$(Build.ArtifactStagingDirectory)'
