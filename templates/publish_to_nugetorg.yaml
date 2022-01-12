@@ -33,6 +33,6 @@ stages:
             - task: NuGetCommand@2
               inputs:
                 command: push
-                packagesToPush:  '$(Pipeline.Workspace)/${{ parameters.artifact_directory }}'
+                packagesToPush:  '$(Pipeline.Workspace)/${{ parameters.artifact_directory }}/*.nupkg'
                 nuGetFeedType: external
                 publishFeedCredentials: '${{ parameters.service_connection }}'
