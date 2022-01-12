@@ -18,6 +18,10 @@ stages:
     jobs:
     - job: Build
       steps:
+      - checkout: impower
+        name: Checkout_Impower
+        displayName: 'Checkout Impower Repository'
+        path: impower
       - checkout: target
         name: Checkout_Target_Repository
         displayName: 'Checkout Target Repository' 
@@ -36,6 +40,8 @@ stages:
           projects: '${{ parameters.project_name }}.csproj'
           versioningScheme: 'byBuildNumber'
           outputDir: '$(Build.ArtifactStagingDirectory)'
+          selectOrConfig: 'config'
+          nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/default_nuget.config'
 
       - task: DotNetCoreCLI@2
         displayName: 'Pack Solution'
