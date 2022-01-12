@@ -54,7 +54,7 @@ stages:
         displayName: 'Pack Solution'
         inputs:
           command: 'pack'
-          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
+          packagesToPack: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
           nobuild: true
           versioningScheme: 'byBuildNumber'
           outputDir: '$(Build.ArtifactStagingDirectory)'
