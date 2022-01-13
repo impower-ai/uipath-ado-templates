@@ -13,6 +13,9 @@ parameters:
   - name: artifact_path
     type: string
     default: "CSharp Package"
+  - name: sdk_version
+    type: string
+    default: ''
 
 stages:
   - stage: Build
@@ -28,11 +31,12 @@ stages:
         name: Checkout_Target_Repository
         displayName: 'Checkout Target Repository' 
         path: target
-      - task: UseDotNet@2
-        displayName: 'Install SDK'
-        inputs:
-          version: '5.0.x'
-          includePreviewVersions: true
+      - ${{ if parameters.sdk_version }}:
+        - task: UseDotNet@2
+          displayName: 'Install SDK'
+          inputs:
+            version: ${{ parameters.sdk_version }}
+            includePreviewVersions: true
 
       - task: DotNetCoreCLI@2
         displayName: 'Restore'
