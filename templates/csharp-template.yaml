@@ -1,9 +1,8 @@
 parameters:
-  - name: project_name
-    displayName: "Project Name"
+  - name: project_pattern
     type: string
+    default: "*.csproj"
   - name: folder
-    displayName: "Orchestrator Folder"
     type: string
   - name: uipath_environment
     type: string
@@ -11,6 +10,9 @@ parameters:
     type: string
   - name: stage_name
     type: string
+  - name: artifact_path
+    type: string
+    default: "CSharp Package"
 
 stages:
   - stage: Build
@@ -36,7 +38,7 @@ stages:
         displayName: 'Restore'
         inputs:
           command: 'restore'
-          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
+          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           feedsToUse: 'config'
           nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/nuget.config'
 
@@ -45,7 +47,7 @@ stages:
         inputs:
           command: 'build'
           arguments: '-p:Version=$(Build.BuildNumber)'
-          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
+          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           feedsToUse: 'config'
           nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/nuget.config'
@@ -54,7 +56,7 @@ stages:
         displayName: 'Pack Solution'
         inputs:
           command: 'pack'
-          packagesToPack: '$(Agent.BuildDirectory)/target/${{ parameters.project_name }}.csproj'
+          packagesToPack: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           nobuild: true
           versioningScheme: 'byBuildNumber'
           outputDir: '$(Build.ArtifactStagingDirectory)'
@@ -62,7 +64,7 @@ stages:
       - task: PublishPipelineArtifact@1
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
-          artifact: 'CSharp Package'
+          artifact: '${{ parameters.artifact_path }}'
           publishLocation: 'pipeline'
 
   - stage: ${{ parameters.stage_name }}
@@ -78,6 +80,6 @@ stages:
                 - task: UiPathDeploy@2
                   inputs:
                     orchestratorConnection: ${{ parameters.uipath_environment }}
-                    packagesPath: '$(Pipeline.Workspace)/CSharp Package'
+                    packagesPath: '$(Pipeline.Workspace)/${{ parameters.artifact_path }}'
                     folderName: '${{ parameters.folder }}'
                     traceLevel: 'Information'
