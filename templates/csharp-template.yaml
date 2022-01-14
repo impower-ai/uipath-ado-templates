@@ -16,6 +16,10 @@ parameters:
   - name: sdk_version
     type: string
     default: ''
+  - name: target_resource_name
+    type: string
+    default: 'target'
+
 
 stages:
   - stage: Build
@@ -27,7 +31,7 @@ stages:
         name: Checkout_Impower
         displayName: 'Checkout Impower Repository'
         path: impower
-      - checkout: target
+      - checkout: ${{ parameters.target_resource_name }} 
         name: Checkout_Target_Repository
         displayName: 'Checkout Target Repository' 
         path: target
