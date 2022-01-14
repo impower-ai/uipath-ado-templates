@@ -19,6 +19,9 @@ parameters:
   - name: is_alpha
     type: boolean
     default: false
+  - name: target_resource_name
+    type: string
+    default: 'target'
 
 stages:
 - stage: Build
@@ -29,7 +32,7 @@ stages:
   - job: BuildJob
     displayName: 'Build Package'
     steps:
-    - checkout: target
+    - checkout: ${{ parameters.target_resource_name }}
       displayName: 'Checkout Target Repository'
       path: target
     - checkout: impower
