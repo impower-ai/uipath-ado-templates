@@ -1,0 +1,40 @@
+#DEPRECATED 1/17/21 - Use 'publish-to-nuget-feed.yaml' instead
+parameters:
+  - name: service_connection
+    type: string
+  - name: azure_environment
+    type: string
+  - name: stage_name
+    type: string
+  - name: stage_dependencies
+    type: object
+    default: {}
+  - name: main_only
+    type: boolean
+    default: false
+  - name: artifact_directory
+    type: string
+
+stages:
+- ${{ if or(not(parameters.main_only),eq(variables['Build.SourceBranchName'], 'main')) }}: 
+  - stage: ${{ parameters.stage_name }}
+    displayName: ${{ replace(parameters.stage_name,'_',' ') }}
+    dependsOn: '${{ parameters.stage_dependencies }}'
+    condition: succeeded()
+    jobs:
+    - deployment: Deploy_${{ parameters.stage_name }}
+      displayName: ${{ replace(parameters.stage_name,'_',' ') }}
+      pool:
+        vmImage: 'windows-latest'
+      environment: ${{ parameters.azure_environment }}
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: NuGetCommand@2
+              inputs:
+                command: push
+                packagesToPush:  '$(Pipeline.Workspace)/${{ parameters.artifact_directory }}/*.nupkg'
+                nuGetFeedType: external
+                publishFeedCredentials: '${{ parameters.service_connection }}'
+                externalFeedCredentials: '${{ parameters.service_connection }}'

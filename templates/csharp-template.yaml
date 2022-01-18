@@ -1,3 +1,4 @@
+#DEPRECATED 1/17/21 - Use 'csharp-build.yaml' instead
 parameters:
   - name: project_pattern
     type: string
@@ -48,7 +49,7 @@ stages:
           command: 'restore'
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           feedsToUse: 'config'
-          nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/nuget.config'
+          nugetConfigPath: '$(Agent.BuildDirectory)/impower/other/nuget.config'
 
       - task: DotNetCoreCLI@2
         displayName: 'Build Solution'
@@ -58,7 +59,7 @@ stages:
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           feedsToUse: 'config'
-          nugetConfigPath: '$(Agent.BuildDirectory)/impower/utilities/nuget.config'
+          nugetConfigPath: '$(Agent.BuildDirectory)/impower/other/nuget.config'
 
       - task: DotNetCoreCLI@2
         displayName: 'Pack Solution'

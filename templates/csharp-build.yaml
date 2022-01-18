@@ -1,0 +1,72 @@
+parameters:
+  - name: project_pattern
+    type: string
+    default: "*.csproj"
+  - name: stage_name
+    type: string
+    default: 'Build'
+  - name: artifact_path
+    type: string
+    default: "CSharp Package"
+  - name: sdk_version
+    type: string
+    default: ''
+  - name: target_resource_name
+    type: string
+    default: 'target'
+
+
+stages:
+  - stage: ${{ parameters.stage_name }}
+    displayName: ${{ replace(parameters.stage_name,'_',' ') }}
+    jobs:
+    - job: Build
+      steps:
+      - checkout: impower
+        name: Checkout_Impower
+        displayName: 'Checkout Impower Repository'
+        path: impower
+      - checkout: ${{ parameters.target_resource_name }} 
+        name: Checkout_Target_Repository
+        displayName: 'Checkout Target Repository' 
+        path: target
+      - ${{ if parameters.sdk_version }}:
+        - task: UseDotNet@2
+          displayName: 'Install SDK'
+          inputs:
+            version: ${{ parameters.sdk_version }}
+            includePreviewVersions: true
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Restore'
+        inputs:
+          command: 'restore'
+          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
+          feedsToUse: 'config'
+          nugetConfigPath: '$(Agent.BuildDirectory)/impower/other/nuget.config'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build Solution'
+        inputs:
+          command: 'build'
+          arguments: '-p:Version=$(Build.BuildNumber)'
+          projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
+          outputDir: '$(Build.ArtifactStagingDirectory)'
+          feedsToUse: 'config'
+          nugetConfigPath: '$(Agent.BuildDirectory)/impower/other/nuget.config'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Pack Solution'
+        inputs:
+          command: 'pack'
+          packagesToPack: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
+          nobuild: true
+          versioningScheme: 'byBuildNumber'
+          outputDir: '$(Build.ArtifactStagingDirectory)'
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: '${{ parameters.artifact_path }}'
+          publishLocation: 'pipeline'
+
