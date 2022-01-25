@@ -15,6 +15,9 @@ parameters:
   - name: stage_dependencies
     type: object
     default: {}
+  - name: artifact_path
+    type: string
+    default: 'UiPathPackage'
   - name: main_only
     type: boolean
     default: false
@@ -38,7 +41,7 @@ stages:
             - task: UiPathDeploy@2
               inputs:
                 orchestratorConnection: ${{ parameters.service_connection }}
-                packagesPath: $(Pipeline.Workspace)/UiPathPackage
+                packagesPath: $(Pipeline.Workspace)/${{ parameters.artifact_path }}
                 folderName: ${{ parameters.orchestrator_folder }}
                 traceLevel: ${{ parameters.trace_level }}
           
