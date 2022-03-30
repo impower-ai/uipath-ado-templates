@@ -15,7 +15,7 @@ resources:
     endpoint: GithubConnection
     trigger: none
     #optional - add a ref to specify a version.
-    ref: e16b74bb16e9e804faa05c9dcdce1e24dc123f7c
+    ref: refs/tags/v03.30.22
 ```
 You can then reference templates like this:
 ```yaml
