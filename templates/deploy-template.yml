@@ -21,18 +21,22 @@ parameters:
   - name: main_only
     type: boolean
     default: false
+  - name: use_hosted_agent
+    type: boolean
+    default: true
 
 stages:
 - ${{ if or(not(parameters.main_only),eq(variables['Build.SourceBranchName'], 'main')) }}: 
   - stage: ${{ parameters.stage_name }}
+    ${{ if parameters.use_hosted_agent }}:
+      pool:
+        vmImage: 'windows-latest'
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
     dependsOn: '${{ parameters.stage_dependencies }}'
     condition: succeeded()
     jobs:
     - deployment: Deploy_${{ parameters.stage_name }}
       displayName: ${{ replace(parameters.stage_name,'_',' ') }}
-      pool:
-        vmImage: 'windows-latest'
       environment: ${{ parameters.azure_environment }}
       strategy:
         runOnce:

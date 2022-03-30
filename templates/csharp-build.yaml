@@ -14,10 +14,16 @@ parameters:
   - name: target_resource_name
     type: string
     default: 'target'
+  - name: use_hosted_agent
+    type: boolean
+    default: true
 
 
 stages:
   - stage: ${{ parameters.stage_name }}
+    ${{ if parameters.use_hosted_agent }}:
+      pool:
+        vmImage: 'windows-latest'
     displayName: ${{ replace(parameters.stage_name,'_',' ') }}
     jobs:
     - job: Build

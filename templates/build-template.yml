@@ -22,12 +22,16 @@ parameters:
   - name: target_resource_name
     type: string
     default: 'target'
+  - name: use_hosted_agent
+    type: boolean
+    default: true
 
 stages:
 - stage: Build
   displayName: 'Build'
-  pool:
-    vmImage: 'windows-latest'
+  ${{ if parameters.use_hosted_agent }}:
+    pool:
+      vmImage: 'windows-latest'
   jobs:
   - job: BuildJob
     displayName: 'Build Package'
