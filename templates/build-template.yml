@@ -34,6 +34,9 @@ stages:
       vmImage: 'windows-latest'
   jobs:
   - job: BuildJob
+    ${{ if parameters.use_hosted_agent }}:
+      workspace:
+        clean: all
     displayName: 'Build Package'
     steps:
     - checkout: ${{ parameters.target_resource_name }}

@@ -29,6 +29,9 @@ stages:
     condition: succeeded()
     jobs:
     - deployment: Deploy_${{ parameters.stage_name }}
+      ${{ if not(parameters.use_hosted_agent) }}:
+        workspace:
+          clean: all
       displayName: ${{ replace(parameters.stage_name,'_',' ') }}
       environment: ${{ parameters.azure_environment }}
       strategy:
