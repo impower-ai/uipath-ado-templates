@@ -1,26 +1,18 @@
-#presumes the existence of a repository resource named 'target' with a project.json in the root directory
-#presumes the existence of a repository resource named 'impower' with relevant scripts
 parameters:
   - name: service_connection
     type: string
   - name: azure_environment
     type: string
-  - name: orchestrator_folder
-    type: string
-  - name: trace_level
-    type: string
-    default: 'Warning'
   - name: stage_name
     type: string
   - name: stage_dependencies
     type: object
     default: {}
-  - name: artifact_path
-    type: string
-    default: 'UiPathPackage'
   - name: main_only
     type: boolean
     default: false
+  - name: artifact_directory
+    type: string
 
 stages:
 - ${{ if or(not(parameters.main_only),eq(variables['Build.SourceBranchName'], 'main')) }}: 
@@ -38,11 +30,9 @@ stages:
         runOnce:
           deploy:
             steps:
-            - task: UiPathDeploy@2
+            - task: NuGetCommand@2
               inputs:
-                orchestratorConnection: ${{ parameters.service_connection }}
-                packagesPath: $(Pipeline.Workspace)/${{ parameters.artifact_path }}
-                folderName: ${{ parameters.orchestrator_folder }}
-                traceLevel: ${{ parameters.trace_level }}
-          
-      
+                command: push
+                packagesToPush:  '$(Pipeline.Workspace)/${{ parameters.artifact_directory }}/*.nupkg'
+                nuGetFeedType: external
+                publishFeedCredentials: '${{ parameters.service_connection }}'
