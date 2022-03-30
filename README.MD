@@ -1,3 +1,4 @@
+![Latest Release](https://img.shields.io/github/v/tag/impower-ai/uipath-ado-templates?style=flat-square)
 ![Last Update](https://img.shields.io/github/last-commit/impower-ai/uipath-ado-templates?style=flat-square)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
