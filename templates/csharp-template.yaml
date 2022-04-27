@@ -60,7 +60,10 @@ stages:
         displayName: 'Build Solution'
         inputs:
           command: 'build'
-          arguments: '-p:Version=$(Build.BuildNumber)'
+          ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+            arguments: '-p:Version=$(Build.BuildNumber)'
+          ${{ else }}:
+            arguments: '-p:Version=$(Build.BuildNumber)-alpha'
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           feedsToUse: 'config'

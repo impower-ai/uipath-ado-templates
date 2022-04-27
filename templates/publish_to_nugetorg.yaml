@@ -1,3 +1,4 @@
+#DEPRECATED 1/17/21 - Use 'publish-to-nuget-feed.yaml' instead
 parameters:
   - name: service_connection
     type: string
