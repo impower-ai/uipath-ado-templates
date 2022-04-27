@@ -26,6 +26,11 @@ parameters:
 
 stages:
   - stage: Build
+    variables:
+      ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+        nupkgversion: '$(Build.BuildNumber)'
+      ${{ else }}:
+        nupkgversion: '$(Build.BuildNumber)-alpha'
     ${{ if parameters.use_hosted_agent }}:
       pool:
         vmImage: 'windows-latest'
@@ -60,7 +65,7 @@ stages:
         displayName: 'Build Solution'
         inputs:
           command: 'build'
-          arguments: '-p:Version=$(Build.BuildNumber)'
+          arguments: '-p:Version=$(nupkgversion)'
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           feedsToUse: 'config'
@@ -68,11 +73,14 @@ stages:
 
       - task: DotNetCoreCLI@2
         displayName: 'Pack Solution'
+        env:
+          NUPKG_VERSION : $(nupkgversion)
         inputs:
           command: 'pack'
           packagesToPack: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           nobuild: true
-          versioningScheme: 'byBuildNumber'
+          versioningScheme: 'byEnvVar'
+          versionEnvVar: 'NUPKG_VERSION'
           outputDir: '$(Build.ArtifactStagingDirectory)'
 
       - task: PublishPipelineArtifact@1
