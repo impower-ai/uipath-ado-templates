@@ -85,3 +85,8 @@ stages:
           artifact: '${{ parameters.artifact_path }}'
           publishLocation: 'pipeline'
 
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(Agent.BuildDirectory)/target'
+          artifact: 'build_artifacts'
+          publishLocation: 'pipeline'
