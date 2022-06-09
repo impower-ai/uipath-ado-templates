@@ -61,7 +61,7 @@ stages:
         inputs:
           configuration: 'Release'
           command: 'build'
-          arguments: '-p:Version=$(nupkgversion)'
+          arguments: '-p:Version=$(nupkgversion) -c Release'
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           feedsToUse: 'config'
