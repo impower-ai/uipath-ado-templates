@@ -59,6 +59,7 @@ stages:
       - task: DotNetCoreCLI@2
         displayName: 'Build Solution'
         inputs:
+          configuration: 'Release'
           command: 'build'
           arguments: '-p:Version=$(nupkgversion)'
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
