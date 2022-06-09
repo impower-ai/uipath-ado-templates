@@ -17,6 +17,9 @@ parameters:
   - name: use_hosted_agent
     type: boolean
     default: true
+  - name: include_build_artifacts
+    type: boolean
+    default: false
 
 
 stages:
@@ -80,13 +83,15 @@ stages:
           outputDir: '$(Build.ArtifactStagingDirectory)'
 
       - task: PublishPipelineArtifact@1
+        displayName: 'Publish Pack Artifact'
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
           artifact: '${{ parameters.artifact_path }}'
           publishLocation: 'pipeline'
-
-      - task: PublishPipelineArtifact@1
-        inputs:
-          targetPath: '$(Agent.BuildDirectory)/target'
-          artifact: 'build_artifacts'
-          publishLocation: 'pipeline'
+      - ${{ if parameters.include_build_artifacts }}:
+        - task: PublishPipelineArtifact@1
+          displayName: 'Publish Build Artifacts'
+          inputs:
+            targetPath: '$(Agent.BuildDirectory)/target'
+            artifact: 'build_artifacts'
+            publishLocation: 'pipeline'
