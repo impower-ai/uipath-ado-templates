@@ -69,6 +69,7 @@ stages:
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           feedsToUse: 'config'
+          configuration: 'Release'
           nugetConfigPath: '$(Agent.BuildDirectory)/impower/other/nuget.config'
 
       - task: DotNetCoreCLI@2
@@ -77,7 +78,6 @@ stages:
           NUPKG_VERSION : $(nupkgversion)
         inputs:
           command: 'pack'
-          configuration: 'Release'
           packagesToPack: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           nobuild: true
           versioningScheme: 'byEnvVar'
