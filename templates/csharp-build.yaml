@@ -72,7 +72,7 @@ stages:
           NUPKG_VERSION : $(nupkgversion)
         inputs:
           command: 'pack'
-          arguments: '-c Release'
+          configurationToPack: 'Release'
           packagesToPack: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           nobuild: true
           versioningScheme: 'byEnvVar'
