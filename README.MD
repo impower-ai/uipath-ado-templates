@@ -1,6 +1,7 @@
 ![Latest Release](https://img.shields.io/github/v/tag/impower-ai/uipath-ado-templates?style=flat-square)
 ![Last Update](https://img.shields.io/github/last-commit/impower-ai/uipath-ado-templates?style=flat-square)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+![Issues](https://img.shields.io/github/issues/impower-ai/uipath-ado-templates?style=flat-square)
 
 # About
 This repository contains YAML templates and Powershell scripts intended to be used with Azure DevOps pipelines. These templates simplify the process of creating staged pipelines, and also provide some extended functionality beyond what is included in the [UiPath Integration for Azure DevOps](https://marketplace.visualstudio.com/items?itemName=uipath.vsts-uipath-package)
@@ -16,14 +17,57 @@ resources:
     endpoint: GithubConnection
     trigger: none
     #optional - add a ref to specify a version.
-    ref: refs/tags/v03.30.22
+    ref: refs/tags/v22.06.09.14
 ```
+
 You can then reference templates like this:
+
 ```yaml
 stages:
-- template: /templates/some-template.yaml@impower
+
+# Build Package
+- template: /templates/build-template.yml@impower
   parameters:
-    project_name: "ExampleProject"
-    stage_name: 'Development'
-    deploy_environment: 'Development'
+    service_connection: 'OrchestratorDevelopment'
+    package_version: 'build'
+
+# Deploy Development
+- template: /templates/deploy-template.yml@impower
+  parameters:
+    service_connection: 'OrchestratorDevelopment'
+    azure_environment: 'UiPathDevelopment'
+    orchestrator_folder: 'MyProject'
+    stage_name: 'DeployDevelopment'
+    stage_dependencies:
+    - 'Build'
+
+# Deploy Staging
+- template: /templates/deploy-template.yml@impower
+  parameters:
+    service_connection: 'OrchestratorDevelopment'
+    azure_environment: 'UiPathDevelopment'
+    orchestrator_folder: 'MyProject'
+    stage_name: 'DeployStaging'
+    stage_dependencies:
+    - 'Build'
+    
+# Test In Staging
+- template: /templates/test-template.yml@impower
+  parameters:
+    service_connection: 'OrchestratorStaging'
+    orchestrator_folder: 'MyProject'
+    stage_name: 'TestStaging'
+    stage_dependencies:
+    - 'DeployStaging'
+
+# Deploy In Production
+- template: /templates/deploy-template.yml@impower
+  parameters:
+    service_connection: 'OrchestratorProduction'
+    azure_environment: 'UiPathProduction'
+    orchestrator_folder: 'MyProject'
+    stage_name: 'DeployProduction'
+    stage_dependencies:
+    - 'DeployDevelopment'
+    - 'TestStaging'
 ```
