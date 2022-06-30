@@ -7,7 +7,7 @@
 This repository contains YAML templates and Powershell scripts intended to be used with Azure DevOps pipelines. These templates simplify the process of creating staged pipelines, and also provide some extended functionality beyond what is included in the [UiPath Integration for Azure DevOps](https://marketplace.visualstudio.com/items?itemName=uipath.vsts-uipath-package)
 
 # Usage
-Create a [Github Service Connection](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#github-service-connection) (in this example, called 'GithubConnection' in your Azure DevOps project. No special permissions are needed. Define to the reference to this repository in the beginning of your build pipeline:
+Create a [Github Service Connection](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#github-service-connection). In this example, it is called 'GithubConnection'. No special permissions are needed. Define to the reference to this repository in the beginning of your build pipeline:
 ```yaml
 resources:
   repositories:
