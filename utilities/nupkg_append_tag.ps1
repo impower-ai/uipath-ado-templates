@@ -15,7 +15,7 @@ Get-ChildItem -Path $directory_path -Filter "*.nupkg" | ForEach-Object {
   Expand-Archive -Path $zipped_path -DestinationPath $unzipped_folder -Force
   $nuspec_path = $unzipped_folder + "/" + @(Get-ChildItem -Path $unzipped_folder -Filter "*.nuspec")[0]
   [xml]$nuspec_content = Get-Content $nuspec_path
-  $nuspec_content.package.metadata.tag = $nuspec_content.package.metadata.tag + " " + $tag
+  $nuspec_content.package.metadata.tags = $nuspec_content.package.metadata.tags + " " + $tag
   $nuspec_content.Save($nuspec_path)
   Compress-Archive -Path ($unzipped_folder+"/*") -DestinationPath $zipped_path -Force
   Rename-Item -Path $zipped_path -NewName $package_path -Verbose
