@@ -1,6 +1,9 @@
 #presumes the existence of a repository resource named 'target' with a project.json in the root directory
 #presumes the existence of a repository resource named 'impower' with relevant scripts
 parameters:
+  - name: extension_version
+    type: string
+    default: '2'
   - name: service_connection
     type: string
   - name: icon_url
@@ -64,7 +67,7 @@ stages:
           filePath: '$(Agent.BuildDirectory)/impower/utilities/add_release_notes.ps1'
           arguments: >
             -path_to_project_folder $(Agent.BuildDirectory)/target
-    - task: UiPathPack@2
+    - task: UiPathPack@${{ parameters.extension_version }}
       name: pack_package
       displayName: 'Pack Package'
       inputs:
