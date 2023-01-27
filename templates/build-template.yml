@@ -67,26 +67,40 @@ stages:
           filePath: '$(Agent.BuildDirectory)/impower/utilities/add_release_notes.ps1'
           arguments: >
             -path_to_project_folder $(Agent.BuildDirectory)/target
-    - task: 
-        ${{ if parameters.use_preview }}:
-          uipath.vsts-uipath-package-preview.uipath-pack-preview.UiPathPack-preview@2
-        ${{ else }}:  
-          UiPathPack@2
-      name: pack_package
-      displayName: 'Pack Package'
-      inputs:
-        ${{ if eq(parameters.package_version,'auto') }}:
-          versionType: 'AutoVersion'
-        ${{ elseif eq(parameters.package_version, 'build') }}:
-          versionType: 'ManualVersion'
-          version: '$(Build.BuildNumber)'
-        ${{ else }}:
-          versionType: 'CurrentVersion'
-        projectJsonPath: $(Agent.BuildDirectory)/target/project.json
-        outputPath: $(Build.ArtifactStagingDirectory)
-        outputType: ${{ parameters.output_type }}
-        orchestratorConnection: ${{ parameters.service_connection }}
-        traceLevel: ${{ parameters.trace_level }}
+    - ${{ if parameters.use_preview }}:
+      - task: uipath.vsts-uipath-package-preview.uipath-pack-preview.UiPathPack-preview@2
+        name: pack_package
+        displayName: 'Pack Package (Preview)'
+        inputs:
+          ${{ if eq(parameters.package_version,'auto') }}:
+            versionType: 'AutoVersion'
+          ${{ elseif eq(parameters.package_version, 'build') }}:
+            versionType: 'ManualVersion'
+            version: '$(Build.BuildNumber)'
+          ${{ else }}:
+            versionType: 'CurrentVersion'
+          projectJsonPath: $(Agent.BuildDirectory)/target/project.json
+          outputPath: $(Build.ArtifactStagingDirectory)
+          outputType: ${{ parameters.output_type }}
+          orchestratorConnection: ${{ parameters.service_connection }}
+          traceLevel: ${{ parameters.trace_level }}
+    - ${{ else }}:
+      - task: UiPathPack@2
+        name: pack_package
+        displayName: 'Pack Package'
+        inputs:
+          ${{ if eq(parameters.package_version,'auto') }}:
+            versionType: 'AutoVersion'
+          ${{ elseif eq(parameters.package_version, 'build') }}:
+            versionType: 'ManualVersion'
+            version: '$(Build.BuildNumber)'
+          ${{ else }}:
+            versionType: 'CurrentVersion'
+          projectJsonPath: $(Agent.BuildDirectory)/target/project.json
+          outputPath: $(Build.ArtifactStagingDirectory)
+          outputType: ${{ parameters.output_type }}
+          orchestratorConnection: ${{ parameters.service_connection }}
+          traceLevel: ${{ parameters.trace_level }}
     - ${{ if parameters.is_alpha }}:
       - task: powershell@2
         name: make_alpha
