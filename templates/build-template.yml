@@ -1,9 +1,6 @@
 #presumes the existence of a repository resource named 'target' with a project.json in the root directory
 #presumes the existence of a repository resource named 'impower' with relevant scripts
 parameters:
-  - name: use_preview
-    type: boolean
-    default: false
   - name: service_connection
     type: string
   - name: icon_url
