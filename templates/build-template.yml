@@ -57,13 +57,16 @@ stages:
       path: impower
     - task: UiPathInstallPlatform@3
       name: install_platform
-      displayName: 'Install Platform'
       ${{ if eq(parameters.cli_version,'WINDOWS_MODERN') }}:
+        displayName: 'Install Platform (Windows Modern)'
         inputs:
           cliVersion: 'WIN_22.10.8438.32859'
-      ${{ if eq(parameters.cli_version,'CROSS_PLATFORM') }}:
+      ${{ elseif eq(parameters.cli_version,'CROSS_PLATFORM') }}:
+        displayName: 'Install Platform (Cross Platform)'
         inputs:
           cliVersion: 'X_22.10.8438.32859'
+      ${{ else }}:
+        displayName: 'Install Platform (Windows Legacy)'
     - ${{ if parameters.icon_url }}:
       - task: powershell@2
         name: add_icon_url
