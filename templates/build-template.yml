@@ -71,8 +71,9 @@ stages:
         inputs:
           targetType: 'filePath'
           filePath: '$(Agent.BuildDirectory)/impower/utilities/add_package_icon.ps1'
+          workingDirectory: '$(Agent.BuildDirectory)/target/'
           arguments: >
-            -path_to_project_json $(Agent.BuildDirectory)/target/project.json
+            -path_to_project_json project.json
             -image_url ${{ parameters.icon_url }}
     - ${{ if eq(parameters.add_release_notes, true) }}:
       - task: powershell@2
@@ -82,7 +83,7 @@ stages:
           targetType: 'filePath'
           filePath: '$(Agent.BuildDirectory)/impower/utilities/add_release_notes.ps1'
           arguments: >
-            -path_to_project_folder $(Agent.BuildDirectory)/target
+            -path_to_project_folder '$(Agent.BuildDirectory)/target'
     - task: UiPathPack@3
       name: pack_package
       displayName: 'Pack Package'
@@ -107,7 +108,7 @@ stages:
           targetType: 'filePath'
           filePath: '$(Agent.BuildDirectory)/impower/utilities/nupkg_append_version_suffix.ps1'
           arguments: >
-            -directory_path $(Build.ArtifactStagingDirectory)
+            -directory_path '$(Build.ArtifactStagingDirectory)'
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
