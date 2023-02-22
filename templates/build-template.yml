@@ -49,6 +49,8 @@ stages:
     - checkout: ${{ parameters.target_resource_name }}
       displayName: 'Checkout Target Repository'
       path: target
+      ${{ if( eq(parameters.add_release_notes, true)) }}:
+        fetchDepth: 10
     - checkout: impower
       displayName: 'Checkout Impower Resources'
       path: impower
