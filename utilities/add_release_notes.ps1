@@ -16,7 +16,6 @@ $jsonObject.description += "`n`<< RELEASE NOTES >>"
 $recentCommits = git log -5 --no-merges --oneline --pretty="tformat:|%as - %s"
 $recentCommits = $recentCommits.Replace("|","`n`r")
 $jsonObject.description += $recentCommits
-Write-Host $recentCommits
 
 #Reset context and write data to project.json
 Set-Location -Path $current_context
