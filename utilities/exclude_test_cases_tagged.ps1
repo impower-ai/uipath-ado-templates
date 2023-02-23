@@ -7,6 +7,8 @@ param (
     [switch]$auto_enable = $false
 )
 
+Import-Module $PSScriptRoot/shared_components.psm1 -Force
+
 Write-Host "Auto Enable - $auto_enable"
 Write-Host "Path To Project - $path_to_project"
 Write-Host "Tags - $tags"
@@ -17,7 +19,7 @@ if($auto_enable){
 }
 
 #Modify project.json
-$jsonObject = Get-Content "$($path_to_project)\\project.json" -raw | ConvertFrom-Json
+$jsonObject = Read-UiPathProjectFile -path $path_to_project
 
 #Iterate over test files
 foreach ($file in $jsonObject."designOptions"."fileInfoCollection")
@@ -47,4 +49,4 @@ foreach ($file in $jsonObject."designOptions"."fileInfoCollection")
 }
 
 Write-Host "Writing Modified Project Configuration To Disk.."
-$jsonObject | ConvertTo-Json -depth 32| Set-Content "$($path_to_project)\\project.json"
+Read-UiPathProjectFile -path $path_to_project -data $jsonObject

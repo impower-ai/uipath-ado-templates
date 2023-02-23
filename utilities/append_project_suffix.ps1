@@ -3,7 +3,8 @@ param (
     [string]$suffix
 )
 
+Import-Module $PSScriptRoot/shared_components.psm1 -Force
 #Reads project.json, appends the contents of $suffix onto the project name, and then writes the data back to file
-$jsonObject = Get-Content "$($path_to_project_json)" -raw | ConvertFrom-Json
+$jsonObject = Read-UiPathProjectFile -path $path_to_project_json
 $jsonObject.name = "$($jsonObject.name)$($suffix)"
-$jsonObject | ConvertTo-Json -depth 32 | Set-Content "$($path_to_project_json)"
+Write-UiPathProjectFile -path $path_to_project_json -data $jsonObject

@@ -1,11 +1,13 @@
+
 param (
     #Path to the folder containing your project.json
     [string]$path_to_project_folder
 )
 
+Import-Module $PSScriptRoot/shared_components.psm1 -Force
 #Read the project.json
-$path_to_project_json = $path_to_project_folder + "\project.json"
-$jsonObject = Get-Content "$($path_to_project_json)" -raw | ConvertFrom-Json
+Write-Host $path_to_project_folder
+$jsonObject = Read-UiPathProjectFile -path $path_to_project_folder
 
 #Remember current context, and then change directory to the project
 $current_context = Get-Location
@@ -20,4 +22,4 @@ Write-Host $recentCommits
 
 #Reset context and write data to project.json
 Set-Location -Path $current_context
-$jsonObject | ConvertTo-Json -depth 32| Set-Content "$($path_to_project_json)"
+Write-UiPathProjectFile -data $jsonObject -path $path_to_project_folder

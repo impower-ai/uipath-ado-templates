@@ -7,8 +7,10 @@ param (
     [bool]$override = $true
 )
 
+Import-Module $PSScriptRoot/shared_components.psm1 -Force
+
 #Convert project.json to object
-$jsonObject = Get-Content "$($path_to_project_json)" -raw | ConvertFrom-Json
+$jsonObject = Read-UiPathProjectFile -path $path_to_project_json
 
 #Checks to see if the top-level 'publishData' JSON property exists
 $publishDataExists = [bool]($jsonObject.PSobject.Properties.name -match "publishData");
@@ -30,4 +32,4 @@ if(-Not $publishDataExists){
     }
 }
 #Write the data back to the project.json
-$jsonObject | ConvertTo-Json -depth 32| Set-Content "$($path_to_project_json)"
+Write-UiPathProjectFile -path $path_to_project_json -data $jsonObject
