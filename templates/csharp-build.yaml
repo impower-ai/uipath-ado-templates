@@ -25,6 +25,7 @@ parameters:
 stages:
   - stage: ${{ parameters.stage_name }}
     variables:
+      assemblyversion: $[format('{0:yyyy}.{0:MM}.{0:dd}.{0:HHmm}', pipeline.startTime)]
       ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
         nupkgversion: '$(Build.BuildNumber)'
       ${{ else }}:
@@ -63,7 +64,7 @@ stages:
         displayName: 'Build Solution'
         inputs:
           command: 'build'
-          arguments: '-p:Version=$(nupkgversion) -c Release'
+          arguments: '-p:Version=$(assemblyversion) -c Release'
           projects: '$(Agent.BuildDirectory)/target/${{ parameters.project_pattern }}'
           outputDir: '$(Build.ArtifactStagingDirectory)'
           feedsToUse: 'config'
