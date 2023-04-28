@@ -41,8 +41,9 @@ stages:
     jobs:
     - job: Test_${{ parameters.stage_name }}
       displayName: 'Test Project'
-      pool:
-        vmImage: 'windows-latest'
+      ${{ if parameters.use_hosted_agent }}:
+        pool:
+          vmImage: 'windows-latest'
       steps:
       - checkout: ${{ parameters.target_resource_name }}
         name: checkout_target
@@ -92,5 +93,3 @@ stages:
             testProjectPath: $(Agent.BuildDirectory)/target/project.json
             folderName: ${{ parameters.orchestrator_folder }}
             traceLevel: ${{ parameters.trace_level }}
-          
-      
