@@ -25,6 +25,9 @@ parameters:
   - name: use_hosted_agent
     type: boolean
     default: true
+  - name: target_resource_name
+    type: string
+    default: 'target'
 
 stages:
 - ${{ if not(and(parameters.skip_on_main,eq(variables['Build.SourceBranchName'], 'main'))) }}: 
@@ -41,7 +44,7 @@ stages:
       pool:
         vmImage: 'windows-latest'
       steps:
-      - checkout: target
+      - checkout: ${{ parameters.target_resource_name }} 
         name: checkout_target
         displayName: 'Checkout Target Repository'
         path: target
