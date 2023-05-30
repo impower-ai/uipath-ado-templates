@@ -28,6 +28,13 @@ parameters:
   - name: target_resource_name
     type: string
     default: 'target'
+  - name: cli_version
+    type: string
+    default: WINDOWS_LEGACY
+    values:
+    - WINDOWS_MODERN
+    - WINDOWS_LEGACY
+    - CROSS_PLATFORM
 
 stages:
 - ${{ if not(and(parameters.skip_on_main,eq(variables['Build.SourceBranchName'], 'main'))) }}: 
@@ -53,6 +60,18 @@ stages:
         name: checkout_impower
         displayName: 'Checkout Impower Resources'
         path: impower
+      - task: UiPathInstallPlatform@3
+        name: install_platform
+        ${{ if eq(parameters.cli_version,'WINDOWS_MODERN') }}:
+          displayName: 'Install Platform (Windows Modern)'
+          inputs:
+            cliVersion: 'WIN_22.10.8438.32859'
+        ${{ elseif eq(parameters.cli_version,'CROSS_PLATFORM') }}:
+          displayName: 'Install Platform (Cross Platform)'
+          inputs:
+            cliVersion: 'X_22.10.8438.32859'
+        ${{ else }}:
+          displayName: 'Install Platform (Windows Legacy)'
       - ${{ if parameters.check_flags }}:
         - task: powershell@2
           name: check_for_test_case_tags
