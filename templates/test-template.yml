@@ -93,7 +93,7 @@ stages:
               -path_to_project $(Agent.BuildDirectory)/target
               -tags $(check_for_test_case_tags.flagValue)
       - ${{ if parameters.test_set }}:
-        - task: UiPathTest@2
+        - task: UiPathTest@3
           name: run_test_set
           displayName: 'Run Test Set'
           inputs:
@@ -103,7 +103,7 @@ stages:
             folderName: ${{ parameters.orchestrator_folder }}
             traceLevel: ${{ parameters.trace_level }}
       - ${{ else }}:
-        - task: UiPathTest@2
+        - task: UiPathTest@3
           name: run_transient_tests
           displayName: 'Run Transient Tests'
           inputs:
