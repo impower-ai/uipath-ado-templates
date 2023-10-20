@@ -24,6 +24,9 @@ parameters:
   - name: csvFile
     type: string
     default: "assets_deploy.csv"
+  - name: target_resource_name
+    type: string
+    default: "target"
 
 stages:
   - ${{ if or(not(parameters.main_only),eq(variables['Build.SourceBranchName'], 'main')) }}:
@@ -45,10 +48,13 @@ stages:
               runOnce:
                 deploy:
                   steps:
+                    - checkout: ${{ parameters.target_resource_name }}
+                      displayName: "Checkout Target Repository"
+                      path: target
                     - task: UiPathAssets@3
                       inputs:
                         orchestratorConnection: ${{ parameters.service_connection }}
                         assetActionType: "Deploy"
                         folderName: ${{ parameters.orchestrator_folder }}
-                        csvFile: ${{ parameters.csvFile }}
+                        csvFile: "$(Agent.BuildDirectory)\\target\\${{ parameters.csvFile }}"
                         traceLevel: ${{ parameters.trace_level }}
