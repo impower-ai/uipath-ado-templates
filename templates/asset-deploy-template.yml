@@ -51,7 +51,7 @@ stages:
                     - checkout: ${{ parameters.target_resource_name }}
                       displayName: "Checkout Target Repository"
                       path: target
-                    - task: UiPathAssets@3
+                    - task: UiPathAssets@5
                       inputs:
                         orchestratorConnection: ${{ parameters.service_connection }}
                         assetActionType: "Deploy"

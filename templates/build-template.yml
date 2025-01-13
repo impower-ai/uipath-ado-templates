@@ -54,7 +54,7 @@ stages:
     - checkout: impower
       displayName: 'Checkout Impower Resources'
       path: impower
-    - task: UiPathInstallPlatform@3
+    - task: UiPathInstallPlatform@5
       name: install_platform
       ${{ if eq(parameters.cli_version,'WINDOWS_MODERN') }}:
         displayName: 'Install Platform (Windows Modern)'
@@ -86,7 +86,7 @@ stages:
           filePath: '$(Agent.BuildDirectory)/impower/utilities/add_release_notes.ps1'
           arguments: >
             -path_to_project_folder '$(Agent.BuildDirectory)/target'
-    - task: UiPathPack@3
+    - task: UiPathPack@5
       name: pack_package
       displayName: 'Pack Package'
       inputs:

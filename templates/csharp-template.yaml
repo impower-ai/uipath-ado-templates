@@ -100,7 +100,7 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: UiPathDeploy@2
+                - task: UiPathDeploy@5
                   inputs:
                     orchestratorConnection: ${{ parameters.uipath_environment }}
                     packagesPath: '$(Pipeline.Workspace)/${{ parameters.artifact_path }}'
