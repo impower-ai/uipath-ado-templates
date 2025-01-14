@@ -25,13 +25,6 @@ parameters:
   - name: use_hosted_agent
     type: boolean
     default: true
-  - name: cli_version
-    type: string
-    default: WINDOWS_LEGACY
-    values:
-    - WINDOWS_MODERN
-    - WINDOWS_LEGACY
-    - CROSS_PLATFORM
 
 stages:
 - stage: Build
@@ -49,23 +42,9 @@ stages:
     - checkout: ${{ parameters.target_resource_name }}
       displayName: 'Checkout Target Repository'
       path: target
-      ${{ if parameters.add_release_notes }}:
-        fetchDepth: 10
     - checkout: impower
       displayName: 'Checkout Impower Resources'
       path: impower
-    - task: UiPathInstallPlatform@5
-      name: install_platform
-      ${{ if eq(parameters.cli_version,'WINDOWS_MODERN') }}:
-        displayName: 'Install Platform (Windows Modern)'
-        inputs:
-          cliVersion: 'WIN_22.10.8438.32859'
-      ${{ elseif eq(parameters.cli_version,'CROSS_PLATFORM') }}:
-        displayName: 'Install Platform (Cross Platform)'
-        inputs:
-          cliVersion: 'X_22.10.8438.32859'
-      ${{ else }}:
-        displayName: 'Install Platform (Windows Legacy)'
     - ${{ if parameters.icon_url }}:
       - task: powershell@2
         name: add_icon_url
@@ -73,11 +52,10 @@ stages:
         inputs:
           targetType: 'filePath'
           filePath: '$(Agent.BuildDirectory)/impower/utilities/add_package_icon.ps1'
-          workingDirectory: '$(Agent.BuildDirectory)/target/'
           arguments: >
-            -path_to_project_json project.json
+            -path_to_project_json $(Agent.BuildDirectory)/target/project.json
             -image_url ${{ parameters.icon_url }}
-    - ${{ if parameters.add_release_notes }}:
+    - ${{ if eq(parameters.add_release_notes, true) }}:
       - task: powershell@2
         name: add_release_notes
         displayName: 'Add Release Notes'
@@ -85,8 +63,8 @@ stages:
           targetType: 'filePath'
           filePath: '$(Agent.BuildDirectory)/impower/utilities/add_release_notes.ps1'
           arguments: >
-            -path_to_project_folder '$(Agent.BuildDirectory)/target'
-    - task: UiPathPack@5
+            -path_to_project_folder $(Agent.BuildDirectory)/target
+    - task: UiPathPack@2
       name: pack_package
       displayName: 'Pack Package'
       inputs:
@@ -110,7 +88,7 @@ stages:
           targetType: 'filePath'
           filePath: '$(Agent.BuildDirectory)/impower/utilities/nupkg_append_version_suffix.ps1'
           arguments: >
-            -directory_path '$(Build.ArtifactStagingDirectory)'
+            -directory_path $(Build.ArtifactStagingDirectory)
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)

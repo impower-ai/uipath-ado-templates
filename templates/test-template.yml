@@ -28,13 +28,6 @@ parameters:
   - name: target_resource_name
     type: string
     default: 'target'
-  - name: cli_version
-    type: string
-    default: WINDOWS_LEGACY
-    values:
-    - WINDOWS_MODERN
-    - WINDOWS_LEGACY
-    - CROSS_PLATFORM
 
 stages:
 - ${{ if not(and(parameters.skip_on_main,eq(variables['Build.SourceBranchName'], 'main'))) }}: 
@@ -48,11 +41,10 @@ stages:
     jobs:
     - job: Test_${{ parameters.stage_name }}
       displayName: 'Test Project'
-      ${{ if parameters.use_hosted_agent }}:
-        pool:
-          vmImage: 'windows-latest'
+      pool:
+        vmImage: 'windows-latest'
       steps:
-      - checkout: ${{ parameters.target_resource_name }}
+      - checkout: ${{ parameters.target_resource_name }} 
         name: checkout_target
         displayName: 'Checkout Target Repository'
         path: target
@@ -60,18 +52,6 @@ stages:
         name: checkout_impower
         displayName: 'Checkout Impower Resources'
         path: impower
-      - task: UiPathInstallPlatform@5
-        name: install_platform
-        ${{ if eq(parameters.cli_version,'WINDOWS_MODERN') }}:
-          displayName: 'Install Platform (Windows Modern)'
-          inputs:
-            cliVersion: 'WIN_22.10.8438.32859'
-        ${{ elseif eq(parameters.cli_version,'CROSS_PLATFORM') }}:
-          displayName: 'Install Platform (Cross Platform)'
-          inputs:
-            cliVersion: 'X_22.10.8438.32859'
-        ${{ else }}:
-          displayName: 'Install Platform (Windows Legacy)'
       - ${{ if parameters.check_flags }}:
         - task: powershell@2
           name: check_for_test_case_tags
@@ -93,7 +73,7 @@ stages:
               -path_to_project $(Agent.BuildDirectory)/target
               -tags $(check_for_test_case_tags.flagValue)
       - ${{ if parameters.test_set }}:
-        - task: UiPathTest@5
+        - task: UiPathTest@2
           name: run_test_set
           displayName: 'Run Test Set'
           inputs:
@@ -103,7 +83,7 @@ stages:
             folderName: ${{ parameters.orchestrator_folder }}
             traceLevel: ${{ parameters.trace_level }}
       - ${{ else }}:
-        - task: UiPathTest@5
+        - task: UiPathTest@2
           name: run_transient_tests
           displayName: 'Run Transient Tests'
           inputs:
@@ -112,3 +92,5 @@ stages:
             testProjectPath: $(Agent.BuildDirectory)/target/project.json
             folderName: ${{ parameters.orchestrator_folder }}
             traceLevel: ${{ parameters.trace_level }}
+          
+      
